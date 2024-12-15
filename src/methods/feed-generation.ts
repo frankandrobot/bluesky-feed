@@ -15,7 +15,7 @@ export default function (server: Server, ctx: AppContext) {
       !algo
     ) {
       throw new InvalidRequestError(
-        'Unsupported algorithm',
+        `Unsupported algorithm:${feedUri.rkey}`,
         'UnsupportedAlgorithm',
       )
     }
