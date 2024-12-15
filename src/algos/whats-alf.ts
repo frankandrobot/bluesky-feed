@@ -4,13 +4,17 @@ import { AppContext } from '../config'
 // max 15 chars
 export const shortname = 'whats-alf'
 
+const MAX_QUERY_LIMIT = 100;
+
 export const handler = async (ctx: AppContext, params: QueryParams) => {
+  const limit = Math.min(params.limit, MAX_QUERY_LIMIT);
+  
   let builder = ctx.db
     .selectFrom('post')
     .selectAll()
     .orderBy('indexedAt', 'desc')
     .orderBy('cid', 'desc')
-    .limit(params.limit)
+    .limit(limit);
 
   if (params.cursor) {
     const timeStr = new Date(parseInt(params.cursor, 10)).toISOString()

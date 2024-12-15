@@ -5,17 +5,37 @@ import {
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
+  private eventQueue: RepoEvent[] = []
+  private isProcessing = false
+
   async handleEvent(evt: RepoEvent) {
+    // Add the event to the queue
+    this.eventQueue.push(evt)
+    
+    // If we're not already processing events, start processing
+    if (!this.isProcessing) {
+      await this.processQueue()
+    }
+  }
+
+  private async processQueue() {
+    if (this.isProcessing) return
+    this.isProcessing = true
+
+    try {
+      while (this.eventQueue.length > 0) {
+        const evt = this.eventQueue.shift()!
+        await this.processEvent(evt)
+      }
+    } finally {
+      this.isProcessing = false
+    }
+  }
+
+  private async processEvent(evt: RepoEvent) {
     if (!isCommit(evt)) return
 
     const ops = await getOpsByType(evt)
-
-    // This logs the text of every post off the firehose.
-    // Just for fun :)
-    // Delete before actually using
-    // for (const post of ops.posts.creates) {
-    //   console.log(post.record.text)
-    // }
 
     const postsToDelete = ops.posts.deletes.map((del) => del.uri)
     const postsToCreate = ops.posts.creates
