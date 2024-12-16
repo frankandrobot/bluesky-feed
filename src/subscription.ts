@@ -10,10 +10,17 @@ type Created = GetOpsByType['posts']['creates'][0]
 const matches = (create: Created) =>
   create.record.text.toLowerCase().includes('#ai-video-art')
 
+if (!process.env.MAX_QUEUE_SIZE) {
+  console.error('Need MAX_QUEUE_SIZE')
+  process.exit(1)
+}
+
+const maxQueueSize = +process.env.MAX_QUEUE_SIZE
+
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private eventQueue: RepoEvent[] = []
   private isProcessing = false
-  private readonly MAX_QUEUE_SIZE = 500 // Adjust based on your needs
+  private readonly MAX_QUEUE_SIZE = maxQueueSize
 
   async handleEvent(evt: RepoEvent) {
     if (!isCommit(evt)) return
