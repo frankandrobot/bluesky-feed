@@ -8,12 +8,12 @@ type GetOpsByType = Awaited<ReturnType<typeof getOpsByType>>
 type Created = GetOpsByType['posts']['creates'][0]
 
 const matches = (create: Created) =>
-  create.record.text.toLowerCase().includes('alf')
+  create.record.text.toLowerCase().includes('#ai-video-art')
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private eventQueue: RepoEvent[] = []
   private isProcessing = false
-  private readonly MAX_QUEUE_SIZE = 1000 // Adjust based on your needs
+  private readonly MAX_QUEUE_SIZE = 500 // Adjust based on your needs
 
   async handleEvent(evt: RepoEvent) {
     if (!isCommit(evt)) return
