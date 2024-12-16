@@ -4,14 +4,36 @@ import {
 } from './lexicon/types/com/atproto/sync/subscribeRepos'
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 
+type GetOpsByType = Awaited<ReturnType<typeof getOpsByType>>
+type Created = GetOpsByType['posts']['creates'][0]
+
+const matches = (create: Created) =>
+  create.record.text.toLowerCase().includes('alf')
+
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private eventQueue: RepoEvent[] = []
   private isProcessing = false
+  private readonly MAX_QUEUE_SIZE = 1000 // Adjust based on your needs
 
   async handleEvent(evt: RepoEvent) {
+    if (!isCommit(evt)) return
+
+    // Only queue events that might contain Alf-related content
+    const ops = await getOpsByType(evt)
+    const hasRelevantOps =
+      ops.posts.creates.some((create) => matches(create)) ||
+      ops.posts.deletes.length > 0
+
+    if (!hasRelevantOps) return
+
+    if (this.eventQueue.length >= this.MAX_QUEUE_SIZE) {
+      await this.processEvent(evt)
+      return
+    }
+
     // Add the event to the queue
     this.eventQueue.push(evt)
-    
+
     // If we're not already processing events, start processing
     if (!this.isProcessing) {
       await this.processQueue()
@@ -39,10 +61,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
 
     const postsToDelete = ops.posts.deletes.map((del) => del.uri)
     const postsToCreate = ops.posts.creates
-      .filter((create) => {
-        // only alf-related posts
-        return create.record.text.toLowerCase().includes('alf')
-      })
+      .filter((create) => matches(create))
       .map((create) => {
         // map alf-related posts to a db row
         return {
