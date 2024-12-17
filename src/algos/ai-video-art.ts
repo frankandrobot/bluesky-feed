@@ -2,7 +2,7 @@ import { QueryParams } from '../lexicon/types/app/bsky/feed/getFeedSkeleton'
 import { AppContext } from '../config'
 
 // max 15 chars
-export const whatsAlfFeedShortName = 'Test2'
+export const feedShortName = 'ai-video-art'
 
 const MAX_QUERY_LIMIT = 100
 
