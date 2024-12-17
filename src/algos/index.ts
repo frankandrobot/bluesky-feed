@@ -8,7 +8,9 @@ import * as whatsAlf from './whats-alf'
 type AlgoHandler = (ctx: AppContext, params: QueryParams) => Promise<AlgoOutput>
 
 const algos: Record<string, AlgoHandler> = {
-  [whatsAlf.shortname]: whatsAlf.handler,
+  [whatsAlf.whatsAlfFeedShortName]: whatsAlf.handler,
 }
+
+export const feedShortNames = [whatsAlf.whatsAlfFeedShortName] as const
 
 export default algos
